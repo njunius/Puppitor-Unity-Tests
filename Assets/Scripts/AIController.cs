@@ -6,14 +6,17 @@ using System.IO;
 using System.Linq;
 using Puppitor;
 
-[System.Serializable]
 public class AIController : MonoBehaviour
 {
 
+    public string outgoingAction;
+    public string outgoingModifier;
+
     public double curveLocDegrees;
+    public double curveDelta;
 
     public string emotionalGoal;
-    public string sceneBaseEmotions;
+    public string characterDefaultEmotion;
     public string prevailingExpressedAffect;
     public string prevailingInternalizedAffect;
     public string prevailingReceivedAffect;
@@ -24,6 +27,9 @@ public class AIController : MonoBehaviour
 
     public Dictionary<string, double> otherAffectVector;
 
+    public List<string> actionList;
+    public List<string> modifierList;
+
     public string affecterOutgoingFilePath;
     public string affecterIncomingFilePath;
     string jsonString;
@@ -32,12 +38,9 @@ public class AIController : MonoBehaviour
     public Dictionary<string, double> affectVectorOutgoing;
 
     public Affecter affecterIncoming;
-    public Dictionary<string, double> affectVectorIncoming;
+    //public Dictionary<string, double> affectVectorIncoming;
 
     public ActionKeyMap<KeyCode> test;
-
-    public string action;
-    public string modifier;
 
     // Start is called before the first frame update
     void Start()
@@ -75,7 +78,7 @@ public class AIController : MonoBehaviour
         Debug.Log(jsonString);
         affecterIncoming = new Affecter(jsonString);
 
-        Debug.Log("Incoming Affect Entries");
+        /*Debug.Log("Incoming Affect Entries");
         foreach (KeyValuePair<string, AffectEntry> affect in affecterIncoming.affectRules)
         {
             Debug.Log(affect.Value);
@@ -88,19 +91,21 @@ public class AIController : MonoBehaviour
         foreach (KeyValuePair<string, double> affect in affectVectorIncoming)
         {
             Debug.Log(affect.Key + ": " + affect.Value);
+        }*/
+
+        Dictionary<string, List<KeyCode>> actionDict = new Dictionary<string, List<KeyCode>>();
+
+        foreach (string action in actionList)
+        {
+            actionDict.Add(action, new List<KeyCode>());
         }
 
-        // character gesture setup
-        Dictionary<string, List<KeyCode>> modifierDict = new Dictionary<string, List<KeyCode>>(){
-            {"tempo_up", new List<KeyCode>()},
-            {"tempo_down", new List<KeyCode>()}
-        };
+        Dictionary<string, List<KeyCode>> modifierDict = new Dictionary<string, List<KeyCode>>();
 
-        Dictionary<string, List<KeyCode>> actionDict = new Dictionary<string, List<KeyCode>>(){
-            {"projected_energy", new List<KeyCode>()},
-            {"open_flow", new List<KeyCode>()},
-            {"closed_flow", new List<KeyCode>()}
-        };
+        foreach (string modifier in modifierList)
+        {
+            modifierDict.Add(modifier, new List<KeyCode>());
+        }
 
         Dictionary<string, Dictionary<string, List<KeyCode>>> keyMap = new Dictionary<string, Dictionary<string, List<KeyCode>>>(){
             {"actions", actionDict},
@@ -124,8 +129,13 @@ public class AIController : MonoBehaviour
     {
 
         prevailingReceivedAffect = otherAffecter.GetPrevailingAffect(otherAffectVector);
+
+        //if (affecterOutGoing.)
+        //{
+
+        //}
         
-        curveLocDegrees += 0.4;
+        curveLocDegrees += curveDelta;
 
         if (curveLocDegrees > 360)
         {
@@ -134,7 +144,7 @@ public class AIController : MonoBehaviour
 
         if (0.5 * Math.Sin(curveLocDegrees * Math.PI / 180) + 0.5 < 0.3)
         {
-            emotionalGoal = sceneBaseEmotions;
+            emotionalGoal = characterDefaultEmotion;
         }
         else
         {
@@ -142,11 +152,11 @@ public class AIController : MonoBehaviour
         }
 
         Tuple<string, string> actionAndModifier = GreedyAffectSearch.Think(test, affecterOutGoing, affectVectorOutgoing, emotionalGoal);
-        action = actionAndModifier.Item1;
-        modifier = actionAndModifier.Item2;
+        outgoingAction = actionAndModifier.Item1;
+        outgoingModifier = actionAndModifier.Item2;
 
-        test.UpdateActualStates(action, "actions", true);
-        test.UpdateActualStates(modifier, "modifiers", true);
+        test.UpdateActualStates(outgoingAction, "actions", true);
+        test.UpdateActualStates(outgoingModifier, "modifiers", true);
 
         affecterOutGoing.UpdateAffect(affectVectorOutgoing, test.currentStates["actions"], test.currentStates["modifiers"]);
         prevailingExpressedAffect = affecterOutGoing.GetPrevailingAffect(affectVectorOutgoing);

@@ -155,16 +155,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f9d7f4d7512fe24994a3d788b62482d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  outgoingAction: 
+  outgoingModifier: 
   curveLocDegrees: 0
+  curveDelta: 0.4
   emotionalGoal: 
-  sceneBaseEmotions: anger
+  characterDefaultEmotion: anger
   prevailingExpressedAffect: 
+  prevailingInternalizedAffect: 
   prevailingReceivedAffect: 
   otherCharacter: {fileID: 1276968074}
+  actionList:
+  - projected_energy
+  - open_flow
+  - closed_flow
+  modifierList:
+  - tempo_up
+  - tempo_down
   affecterOutgoingFilePath: Assets/Scripts/affect_rules/test_rules.json
   affecterIncomingFilePath: Assets/Scripts/affect_rules/test_rules.json
-  action: 
-  modifier: 
 --- !u!136 &252131927
 CapsuleCollider:
   m_ObjectHideFlags: 0
