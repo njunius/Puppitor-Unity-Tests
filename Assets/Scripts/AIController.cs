@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Linq;
+using Random = System.Random;
 using Puppitor;
 
 public class AIController : MonoBehaviour
@@ -14,8 +15,8 @@ public class AIController : MonoBehaviour
 
     public double curveLocDegrees;
     public double curveDelta;
+    public double weightTowardDefault;
 
-    public string emotionalGoal;
     public string characterDefaultEmotion;
     public string prevailingExpressedAffect;
     public string prevailingInternalizedAffect;
@@ -42,9 +43,13 @@ public class AIController : MonoBehaviour
 
     public ActionKeyMap<KeyCode> test;
 
+    private System.Random randomInstance;
+
     // Start is called before the first frame update
     void Start()
     {
+        randomInstance = new Random();
+
         curveLocDegrees = 0;
 
         otherAffecter = otherCharacter.GetComponent<PlayerController>().affecterTest;
@@ -128,13 +133,8 @@ public class AIController : MonoBehaviour
     void FixedUpdate()
     {
 
-        prevailingReceivedAffect = otherAffecter.GetPrevailingAffect(otherAffectVector);
-
-        //if (affecterOutGoing.)
-        //{
-
-        //}
-        
+        // move around the circle by a specified number of degrees each update
+        // reset to 0 when >360 to preserve readability
         curveLocDegrees += curveDelta;
 
         if (curveLocDegrees > 360)
@@ -142,16 +142,28 @@ public class AIController : MonoBehaviour
             curveLocDegrees = 0;
         }
 
-        if (0.5 * Math.Sin(curveLocDegrees * Math.PI / 180) + 0.5 < 0.3)
+        prevailingReceivedAffect = otherAffecter.GetPrevailingAffect(otherAffectVector);
+
+        Dictionary<string, int> receivedAffectAdjacencies = affecterOutGoing.affectRules[prevailingReceivedAffect].adjacentAffects;
+
+        if (receivedAffectAdjacencies.Count > 0)
         {
-            emotionalGoal = characterDefaultEmotion;
+            // clamps the sin curve between 0 and 1
+            if (0.5 * Math.Sin(curveLocDegrees * Math.PI / 180) + 0.5 < weightTowardDefault)
+            {
+                prevailingInternalizedAffect = characterDefaultEmotion;
+            }
+            else
+            {
+                prevailingInternalizedAffect = ChooseWeightedRandomAffect(receivedAffectAdjacencies.Keys.ToList(), receivedAffectAdjacencies);
+            }
         }
         else
         {
-            emotionalGoal = otherAffecter.GetPrevailingAffect(otherAffectVector);
+            prevailingInternalizedAffect = prevailingReceivedAffect;
         }
 
-        Tuple<string, string> actionAndModifier = GreedyAffectSearch.Think(test, affecterOutGoing, affectVectorOutgoing, emotionalGoal);
+        Tuple<string, string> actionAndModifier = GreedyAffectSearch.Think(test, affecterOutGoing, affectVectorOutgoing, prevailingInternalizedAffect);
         outgoingAction = actionAndModifier.Item1;
         outgoingModifier = actionAndModifier.Item2;
 
@@ -168,5 +180,25 @@ public class AIController : MonoBehaviour
         //{
         //    Debug.Log(affect.Key + ": " + affect.Value);
         //}
+    }
+
+    private string ChooseWeightedRandomAffect(List<string> connectedAffects, Dictionary<string, int> currAdjacencyWeights, int randomFloor = 0, int randomCeil = 101)
+    {
+        int randomNum = randomInstance.Next(randomFloor, randomCeil);
+        // weighted random choice of the connected affects to the current affect
+        // a weight of 0 is ignored
+        foreach (string affect in connectedAffects)
+        {
+            int currAffectWeight = currAdjacencyWeights[affect];
+            if (currAffectWeight > 0 && randomNum <= currAffectWeight)
+            {
+                return affect;
+            }
+            randomNum -= currAffectWeight;
+        }
+
+        // if all weights are 0, just pick randombly
+        randomNum = randomInstance.Next(connectedAffects.Count);
+        return connectedAffects[randomNum];
     }
 }

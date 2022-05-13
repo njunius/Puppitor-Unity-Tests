@@ -13,6 +13,7 @@ public static class GreedyAffectSearch
         double goalEmotionValue = 0;
         Tuple<double, string, string> futureStateEntry;
 
+        // perform every possible action and modifier combination to find the one with the highest value of the goal emotion
         foreach(string action in actionsToTry.actualActionStates["actions"].Keys)
         {
             foreach (string modifier in actionsToTry.actualActionStates["modifiers"].Keys)
@@ -25,16 +26,10 @@ public static class GreedyAffectSearch
             }
         }
 
+        // sort states into ascending order by the goalEmotionValue
         futureStatesForEval.Sort((x, y) => x.Item1.CompareTo(y.Item1));
 
-        string print = "";
-
-        /*foreach (Tuple<double, string, string> entry in futureStatesForEval)
-        {
-            print += $"entry: {entry.Item1}, {entry.Item2}, {entry.Item3}\n";
-        }
-        Debug.Log(print);*/
-
+        // choose the state with the highest goalEmotionValue and return the action and modifier that was performed to get there
         Tuple<double, string, string> bestActionModifier = futureStatesForEval[futureStatesForEval.Count - 1];
         Tuple<string, string> finalActionModifier = new Tuple<string, string>(bestActionModifier.Item2, bestActionModifier.Item3);
         return finalActionModifier;

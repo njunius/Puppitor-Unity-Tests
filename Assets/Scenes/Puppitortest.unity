@@ -159,7 +159,7 @@ MonoBehaviour:
   outgoingModifier: 
   curveLocDegrees: 0
   curveDelta: 0.4
-  emotionalGoal: 
+  weightTowardDefault: 0.5
   characterDefaultEmotion: anger
   prevailingExpressedAffect: 
   prevailingInternalizedAffect: 
@@ -172,8 +172,8 @@ MonoBehaviour:
   modifierList:
   - tempo_up
   - tempo_down
-  affecterOutgoingFilePath: Assets/Scripts/affect_rules/test_rules.json
-  affecterIncomingFilePath: Assets/Scripts/affect_rules/test_rules.json
+  affecterOutgoingFilePath: Assets/Scripts/affect_rules/test_passions_rules.json
+  affecterIncomingFilePath: Assets/Scripts/affect_rules/test_passions_rules.json
 --- !u!136 &252131927
 CapsuleCollider:
   m_ObjectHideFlags: 0

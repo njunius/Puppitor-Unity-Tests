@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
     void Awake()
     {
         // character affect state setup
-        fileName = @"Assets\Scripts\affect_rules\test_rules.json";
+        fileName = @"Assets\Scripts\affect_rules\test_passions_rules.json";
         jsonString = File.ReadAllText(fileName);
         Debug.Log(jsonString);
 
